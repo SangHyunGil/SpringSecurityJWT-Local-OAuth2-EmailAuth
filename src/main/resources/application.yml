@@ -1,0 +1,17 @@
+spring:
+  jwt:
+    secretKey: vmfhwprxm
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      format_sql: true
+      ddl-auto: create
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/project_db?serverTimezone=UTC&charaterEncoding=UTF-8
+    username: user1
+    password: vmfhwprxm971223
