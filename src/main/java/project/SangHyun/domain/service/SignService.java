@@ -75,6 +75,12 @@ public class SignService {
         return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(requestDto.getEmail()), member.getRefreshToken());
     }
 
+    /**
+     * 소셜 로그인 구현
+     * @param code
+     * @param provider
+     * @return
+     */
     @Transactional
     public MemberLoginResponseDto loginMemberByProvider(String code, String provider) {
         AccessToken accessToken = providerService.getAccessToken(code, provider);
@@ -102,6 +108,11 @@ public class SignService {
         return saveMember;
     }
 
+    /**
+     * 토큰 재발행
+     * @param requestDto
+     * @return
+     */
     @Transactional
     public TokenResponseDto reIssue(TokenRequestDto requestDto) {
         if (!jwtTokenProvider.validateTokenExpiration(requestDto.getRefreshToken()))

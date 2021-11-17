@@ -21,34 +21,34 @@ import project.SangHyun.web.dto.TokenRequestDto;
 @RequestMapping("/sign")
 public class SignController {
 
-    private final SignService memberService;
+    private final SignService signService;
     private final ResponseService responseService;
 
     @ApiOperation(value = "회원가입", notes = "회원가입을 진행한다.")
     @PostMapping("/register")
     public SingleResult<MemberRegisterResponseDto> register(@RequestBody MemberRegisterRequestDto requestDto) {
-        MemberRegisterResponseDto responseDto = memberService.registerMember(requestDto);
+        MemberRegisterResponseDto responseDto = signService.registerMember(requestDto);
         return responseService.getSingleResult(responseDto);
     }
 
     @ApiOperation(value = "로컬 로그인", notes = "로컬을 통해 로그인을 진행한다.")
     @PostMapping("/login")
     public SingleResult<MemberLoginResponseDto> login(@RequestBody MemberLoginRequestDto requestDto) {
-        MemberLoginResponseDto responseDto = memberService.loginMember(requestDto);
+        MemberLoginResponseDto responseDto = signService.loginMember(requestDto);
         return responseService.getSingleResult(responseDto);
     }
 
     @ApiOperation(value = "소셜 로그인", notes = "소셜을 통해 로그인을 진행한다.")
     @PostMapping("/login/{provider}")
     public SingleResult<MemberLoginResponseDto> loginByKakao(@RequestBody AuthCode authCode, @PathVariable String provider) {
-        MemberLoginResponseDto responseDto = memberService.loginMemberByProvider(authCode.getCode(), provider);
+        MemberLoginResponseDto responseDto = signService.loginMemberByProvider(authCode.getCode(), provider);
         return responseService.getSingleResult(responseDto);
     }
 
     @ApiOperation(value = "토큰 재발급", notes = "Refresh Token을 통해 토큰을 재발급받는다.")
     @PostMapping("/reissue")
     public SingleResult<TokenResponseDto> reIssue(@RequestBody TokenRequestDto tokenRequestDto) {
-        TokenResponseDto responseDto = memberService.reIssue(tokenRequestDto);
+        TokenResponseDto responseDto = signService.reIssue(tokenRequestDto);
         return responseService.getSingleResult(responseDto);
     }
 }

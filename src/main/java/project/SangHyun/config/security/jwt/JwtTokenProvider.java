@@ -72,10 +72,6 @@ public class JwtTokenProvider {
         return req.getHeader("X-AUTH-TOKEN");
     }
 
-    public String resolveRefreshToken(HttpServletRequest req) {
-        return req.getHeader("X-REFRESH-TOKEN");
-    }
-
     public boolean validateTokenExpiration(String token) {
         try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
