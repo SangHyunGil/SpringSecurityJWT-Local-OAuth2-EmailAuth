@@ -13,12 +13,12 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/project_db?serverTimezone=UTC&charaterEncoding=UTF-8
-    username: 
-    password:
+    username: user1
+    password: vmfhwprxm971223
 
   social:
     kakao:
-      client_id:
+      client_id: 64ad93950daf754929dd0a31b21707f0
       redirect: http://localhost:8080/social/login/kakao
       url:
         login: https://kauth.kakao.com/oauth/authorize
@@ -26,8 +26,8 @@ spring:
         profile: https://kapi.kakao.com/v2/user/me
 
     google:
-      client_id:
-      client_secret:
+      client_id: 603457904525-7ofrnd3bv9enbj6hh36bt52b1ff5pmgq.apps.googleusercontent.com
+      client_secret: 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
       redirect: http://localhost:8080/social/login/google
       url:
         login: https://accounts.google.com/o/oauth2/v2/auth
@@ -35,8 +35,8 @@ spring:
         profile: https://www.googleapis.com/oauth2/v3/userinfo
 
     naver:
-      client_id:
-      client_secret:
+      client_id: 6EAAF9BNT0mJV_77CWm9
+      client_secret: EoJxlzfsr3
       redirect: http://localhost:8080/social/login/naver
       url:
         login: https://nid.naver.com/oauth2.0/authorize
