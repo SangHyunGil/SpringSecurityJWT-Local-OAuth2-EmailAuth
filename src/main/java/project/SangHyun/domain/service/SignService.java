@@ -2,20 +2,26 @@ package project.SangHyun.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import project.SangHyun.advice.exception.InvalidRefreshTokenException;
 import project.SangHyun.advice.exception.LoginFailureException;
 import project.SangHyun.advice.exception.MemberEmailAlreadyExistsException;
+import project.SangHyun.advice.exception.MemberNotFoundException;
 import project.SangHyun.config.security.jwt.JwtTokenProvider;
 import project.SangHyun.domain.auth.AccessToken;
 import project.SangHyun.domain.auth.Profile.Profile;
 import project.SangHyun.domain.dto.MemberLoginResponseDto;
 import project.SangHyun.domain.dto.MemberRegisterResponseDto;
+import project.SangHyun.domain.dto.TokenResponseDto;
 import project.SangHyun.domain.entity.Member;
 import project.SangHyun.domain.repository.MemberRepository;
 import project.SangHyun.web.dto.MemberLoginRequestDto;
 import project.SangHyun.web.dto.MemberRegisterRequestDto;
+import project.SangHyun.web.dto.TokenRequestDto;
 
 import java.util.Optional;
 
@@ -23,7 +29,7 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class MemberService {
+public class SignService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
@@ -94,5 +100,28 @@ public class MemberService {
                 .build();
         Member saveMember = memberRepository.save(member);
         return saveMember;
+    }
+
+    @Transactional
+    public TokenResponseDto reIssue(TokenRequestDto requestDto) {
+        if (!jwtTokenProvider.validateTokenExpiration(requestDto.getRefreshToken()))
+            throw new InvalidRefreshTokenException();
+
+        Member member = findMemberByToken(requestDto);
+
+        if (!member.getRefreshToken().equals(requestDto.getRefreshToken()))
+            throw new InvalidRefreshTokenException();
+
+        String accessToken = jwtTokenProvider.createToken(member.getEmail());
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        member.updateRefreshToken(refreshToken);
+        return new TokenResponseDto(accessToken, refreshToken);
+    }
+
+    public Member findMemberByToken(TokenRequestDto requestDto) {
+        Authentication auth = jwtTokenProvider.getAuthentication(requestDto.getAccessToken());
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String username = userDetails.getUsername();
+        return memberRepository.findByEmail(username).orElseThrow(MemberNotFoundException::new);
     }
 }

@@ -68,15 +68,19 @@ public class JwtTokenProvider {
         }
     }
 
-    public Tokens resolveToken(HttpServletRequest req) {
-        return new Tokens(req.getHeader("X-AUTH-TOKEN"), req.getHeader("X-REFRESH-TOKEN"));
+    public String resolveToken(HttpServletRequest req) {
+        return req.getHeader("X-AUTH-TOKEN");
     }
 
-    public boolean validateTokenExceptExpiration(String token) {
+    public String resolveRefreshToken(HttpServletRequest req) {
+        return req.getHeader("X-REFRESH-TOKEN");
+    }
+
+    public boolean validateTokenExpiration(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (IllegalArgumentException e) {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

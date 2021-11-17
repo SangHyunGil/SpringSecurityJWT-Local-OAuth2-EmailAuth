@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import project.SangHyun.advice.exception.AuthenticationEntryPointException;
+import project.SangHyun.advice.exception.InvalidRefreshTokenException;
 import project.SangHyun.advice.exception.LoginFailureException;
 import project.SangHyun.advice.exception.MemberEmailAlreadyExistsException;
 import project.SangHyun.domain.result.Result;
@@ -34,12 +35,18 @@ public class ExceptionAdvice {
     @ExceptionHandler(AuthenticationEntryPointException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result authenticationEntryPointException() {
-        return responseService.getFailureResult(-104, "인증이 필요합니다.");
+        return responseService.getFailureResult(-102, "인증이 필요합니다.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result accessDeniedException() {
         return responseService.getFailureResult(-103, "권한이 필요합니다.");
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Result invalidRefreshTokenException() {
+        return responseService.getFailureResult(-104, "Refresh Token이 유효하지 않습니다.");
     }
 }

@@ -12,14 +12,12 @@ import project.SangHyun.config.security.AccessDeniedHandler.CustomAccessDeniedHa
 import project.SangHyun.config.security.AuthenticationEntryPoint.CustomAuthenticationEntryPoint;
 import project.SangHyun.config.security.jwt.JwtAuthenticationFilter;
 import project.SangHyun.config.security.jwt.JwtTokenProvider;
-import project.SangHyun.domain.repository.MemberRepository;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -55,6 +53,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
                 .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler())
             .and()
-                .addFilterBefore(new JwtAuthenticationFilter(memberRepository, jwtTokenProvider), UsernamePasswordAuthenticationFilter.class); // jwt 필터 추가
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class); // jwt 필터 추가
     }
 }
