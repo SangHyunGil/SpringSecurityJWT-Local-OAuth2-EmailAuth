@@ -60,11 +60,13 @@ public class MemberService {
             throw new MemberEmailAlreadyExistsException();
     }
 
+    @Transactional
     public MemberLoginResponseDto loginMember(MemberLoginRequestDto requestDto) {
         Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(LoginFailureException::new);
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword()))
             throw new LoginFailureException();
-        return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(requestDto.getEmail()));
+        member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
+        return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(requestDto.getEmail()), member.getRefreshToken());
     }
 
     @Transactional
@@ -74,10 +76,13 @@ public class MemberService {
 
         Optional<Member> findMember = memberRepository.findByEmailAndProvider(profile.getEmail(), provider);
         if (findMember.isPresent()) {
-            return new MemberLoginResponseDto(findMember.get().getId(), jwtTokenProvider.createToken(findMember.get().getEmail()));
+            Member member = findMember.get();
+            member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
+            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken());
         } else {
             Member saveMember = saveMember(profile, provider);
-            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()));
+            saveMember.updateRefreshToken(jwtTokenProvider.createRefreshToken());
+            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken());
         }
     }
 

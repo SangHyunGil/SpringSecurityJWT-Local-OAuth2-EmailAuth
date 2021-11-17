@@ -24,8 +24,9 @@ public class JwtTokenProvider {
     private String secretKey;
 
     private long tokenValidTime = 1000L * 60 * 30; // 30분
+    private long refreshTokenValidTime = 1000L * 60 * 60 * 24 * 7; // 7일
 
-    private final UserDetailsService memberDetailsService;
+    private final UserDetailsService userDetailsService;
 
     @PostConstruct
     protected void init() {
@@ -44,8 +45,18 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String createRefreshToken() {
+        Date now = new Date();
+
+        return Jwts.builder()
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = memberDetailsService.loadUserByUsername(getMemberEmail(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getMemberEmail(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
@@ -57,15 +68,15 @@ public class JwtTokenProvider {
         }
     }
 
-    public String resolveToken(HttpServletRequest req) {
-        return req.getHeader("X-AUTH-TOKEN");
+    public Tokens resolveToken(HttpServletRequest req) {
+        return new Tokens(req.getHeader("X-AUTH-TOKEN"), req.getHeader("X-REFRESH-TOKEN"));
     }
 
     public boolean validateTokenExceptExpiration(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return !claims.getBody().getExpiration().before(new Date());
-        } catch(Exception e) {
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }

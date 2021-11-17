@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class MemberLoginResponseDto {
     private Long id;
     private String token;
+    private String refreshToken;
 }

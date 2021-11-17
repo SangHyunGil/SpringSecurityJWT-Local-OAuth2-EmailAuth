@@ -23,6 +23,7 @@ public class Member {
     private String email;
     private String password;
     private String provider;
+    private String refreshToken;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
@@ -38,5 +39,9 @@ public class Member {
 
     public void addRole(Role role) {
         this.roles.add(role);
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }
