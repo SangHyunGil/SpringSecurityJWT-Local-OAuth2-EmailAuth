@@ -15,7 +15,7 @@ import project.SangHyun.domain.auth.AccessToken;
 import project.SangHyun.domain.auth.OAuthRequest.OAuthRequest;
 import project.SangHyun.domain.auth.OAuthRequest.OAuthRequestFactory;
 import project.SangHyun.domain.auth.Profile.NaverProfile;
-import project.SangHyun.domain.auth.Profile.Profile;
+import project.SangHyun.domain.auth.Profile.ProfileDto;
 
 @Slf4j
 @Service
@@ -26,7 +26,7 @@ public class ProviderService {
     private final Gson gson;
     private final OAuthRequestFactory oAuthRequestFactory;
 
-    public Profile getProfile(String accessToken, String provider) {
+    public ProfileDto getProfile(String accessToken, String provider) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         httpHeaders.set("Authorization", "Bearer " + accessToken);
@@ -37,7 +37,7 @@ public class ProviderService {
 
         try {
             if (response.getStatusCode() == HttpStatus.OK) {
-                return getProfile(response, provider);
+                return extractProfile(response, provider);
             }
         } catch (Exception e) {
             throw new CommunicationException();
@@ -45,16 +45,16 @@ public class ProviderService {
         throw new CommunicationException();
     }
 
-    private Profile getProfile(ResponseEntity<String> response, String provider) {
+    private ProfileDto extractProfile(ResponseEntity<String> response, String provider) {
         if (provider.equals("kakao")) {
             KakaoProfile kakaoProfile = gson.fromJson(response.getBody(), KakaoProfile.class);
-            return new Profile(kakaoProfile.getKakao_account().getEmail());
+            return new ProfileDto(kakaoProfile.getKakao_account().getEmail());
         } else if(provider.equals("google")) {
             GoogleProfile googleProfile = gson.fromJson(response.getBody(), GoogleProfile.class);
-            return new Profile(googleProfile.getEmail());
+            return new ProfileDto(googleProfile.getEmail());
         } else {
             NaverProfile naverProfile = gson.fromJson(response.getBody(), NaverProfile.class);
-            return new Profile(naverProfile.getResponse().getEmail());
+            return new ProfileDto(naverProfile.getResponse().getEmail());
         }
     }
 

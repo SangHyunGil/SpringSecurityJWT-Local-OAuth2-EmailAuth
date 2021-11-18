@@ -13,7 +13,7 @@ import project.SangHyun.advice.exception.MemberEmailAlreadyExistsException;
 import project.SangHyun.advice.exception.MemberNotFoundException;
 import project.SangHyun.config.security.jwt.JwtTokenProvider;
 import project.SangHyun.domain.auth.AccessToken;
-import project.SangHyun.domain.auth.Profile.Profile;
+import project.SangHyun.domain.auth.Profile.ProfileDto;
 import project.SangHyun.domain.dto.MemberLoginResponseDto;
 import project.SangHyun.domain.dto.MemberRegisterResponseDto;
 import project.SangHyun.domain.dto.TokenResponseDto;
@@ -84,7 +84,7 @@ public class SignService {
     @Transactional
     public MemberLoginResponseDto loginMemberByProvider(String code, String provider) {
         AccessToken accessToken = providerService.getAccessToken(code, provider);
-        Profile profile = providerService.getProfile(accessToken.getAccess_token(), provider);
+        ProfileDto profile = providerService.getProfile(accessToken.getAccess_token(), provider);
 
         Optional<Member> findMember = memberRepository.findByEmailAndProvider(profile.getEmail(), provider);
         if (findMember.isPresent()) {
@@ -98,7 +98,7 @@ public class SignService {
         }
     }
 
-    private Member saveMember(Profile profile, String provider) {
+    private Member saveMember(ProfileDto profile, String provider) {
         Member member = Member.builder()
                 .email(profile.getEmail())
                 .password(null)

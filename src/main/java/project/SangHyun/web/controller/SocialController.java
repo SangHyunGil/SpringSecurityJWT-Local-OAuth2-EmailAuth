@@ -51,7 +51,7 @@ public class SocialController {
                 .append("&response_type=code")
                 .append("&scope=email%20profile")
                 .append("&redirect_uri=").append(googleRedirect);
-
+        //https://nid.naver.com/oauth2.0/authorize?client_id=6EAAF9BNT0mJV_77CWm9&response_type=code&scope=email%20profile
         StringBuilder loginUrl3 = new StringBuilder()
                 .append(env.getProperty("spring.social.naver.url.login"))
                 .append("?client_id=").append(naverClientId)
