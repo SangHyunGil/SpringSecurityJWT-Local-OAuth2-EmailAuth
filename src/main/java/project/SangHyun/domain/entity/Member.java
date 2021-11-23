@@ -24,17 +24,19 @@ public class Member {
     private String password;
     private String provider;
     private String refreshToken;
+    private Boolean emailAuth;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
     private List<Role> roles = new ArrayList<>();
 
     @Builder
-    public Member(String email, String password, String provider, List<Role> roles) {
+    public Member(String email, String password, String provider, List<Role> roles, Boolean emailAuth) {
         this.email = email;
         this.password = password;
         this.provider = provider;
         this.roles = Collections.singletonList(Role.ROLE_MEMBER);
+        this.emailAuth = emailAuth;
     }
 
     public void addRole(Role role) {
@@ -43,5 +45,9 @@ public class Member {
 
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void emailVerifiedSuccess() {
+        this.emailAuth = true;
     }
 }

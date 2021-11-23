@@ -11,6 +11,7 @@ import project.SangHyun.domain.dto.TokenResponseDto;
 import project.SangHyun.domain.result.SingleResult;
 import project.SangHyun.domain.service.ResponseService;
 import project.SangHyun.domain.service.SignService;
+import project.SangHyun.web.dto.EmailAuthRequestDto;
 import project.SangHyun.web.dto.MemberLoginRequestDto;
 import project.SangHyun.web.dto.MemberRegisterRequestDto;
 import project.SangHyun.web.dto.TokenRequestDto;
@@ -27,8 +28,16 @@ public class SignController {
     @ApiOperation(value = "회원가입", notes = "회원가입을 진행한다.")
     @PostMapping("/register")
     public SingleResult<MemberRegisterResponseDto> register(@RequestBody MemberRegisterRequestDto requestDto) {
+        log.info("request = {}, {}", requestDto.getEmail(), requestDto.getPassword());
         MemberRegisterResponseDto responseDto = signService.registerMember(requestDto);
         return responseService.getSingleResult(responseDto);
+    }
+
+    @ApiOperation(value = "이메일 인증", notes = "이메일 인증을 진행한다.")
+    @GetMapping("/confirm-email")
+    public SingleResult<String> confirmEmail(@ModelAttribute EmailAuthRequestDto requestDto) {
+        signService.confirmEmail(requestDto);
+        return responseService.getSingleResult("인증이 완료되었습니다.");
     }
 
     @ApiOperation(value = "로컬 로그인", notes = "로컬을 통해 로그인을 진행한다.")

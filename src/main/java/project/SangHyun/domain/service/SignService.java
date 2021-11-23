@@ -7,23 +7,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import project.SangHyun.advice.exception.InvalidRefreshTokenException;
-import project.SangHyun.advice.exception.LoginFailureException;
-import project.SangHyun.advice.exception.MemberEmailAlreadyExistsException;
-import project.SangHyun.advice.exception.MemberNotFoundException;
+import project.SangHyun.advice.exception.*;
 import project.SangHyun.config.security.jwt.JwtTokenProvider;
 import project.SangHyun.domain.auth.AccessToken;
 import project.SangHyun.domain.auth.Profile.ProfileDto;
 import project.SangHyun.domain.dto.MemberLoginResponseDto;
 import project.SangHyun.domain.dto.MemberRegisterResponseDto;
 import project.SangHyun.domain.dto.TokenResponseDto;
+import project.SangHyun.domain.entity.EmailAuth;
 import project.SangHyun.domain.entity.Member;
+import project.SangHyun.domain.repository.EmailAuthRepository;
 import project.SangHyun.domain.repository.MemberRepository;
+import project.SangHyun.web.dto.EmailAuthRequestDto;
 import project.SangHyun.web.dto.MemberLoginRequestDto;
 import project.SangHyun.web.dto.MemberRegisterRequestDto;
 import project.SangHyun.web.dto.TokenRequestDto;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,9 +34,15 @@ import java.util.Optional;
 public class SignService {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final MemberRepository memberRepository;
+    private final EmailAuthRepository emailAuthRepository;
+
     private final ProviderService providerService;
+    private final EmailService emailService;
+
+
 
     /**
      * Dto로 들어온 값을 통해 회원가입을 진행
@@ -44,33 +52,59 @@ public class SignService {
     @Transactional
     public MemberRegisterResponseDto registerMember(MemberRegisterRequestDto requestDto) {
         validateDuplicated(requestDto.getEmail());
+        EmailAuth emailAuth = emailAuthRepository.save(
+                EmailAuth.builder()
+                        .email(requestDto.getEmail())
+                        .authToken(UUID.randomUUID().toString())
+                        .expired(false)
+                        .build());
+
         Member member = memberRepository.save(
                 Member.builder()
                         .email(requestDto.getEmail())
                         .password(passwordEncoder.encode(requestDto.getPassword()))
                         .provider(null)
+                        .emailAuth(false)
                         .build());
 
+        emailService.send(emailAuth.getEmail(), emailAuth.getAuthToken());
         return MemberRegisterResponseDto.builder()
                 .id(member.getId())
                 .email(member.getEmail())
+                .authToken(emailAuth.getAuthToken())
                 .build();
     }
 
-    /**
-     * Unique한 값을 가져야하나, 중복된 값을 가질 경우를 검증
-     * @param email
-     */
     public void validateDuplicated(String email) {
         if (memberRepository.findByEmail(email).isPresent())
             throw new MemberEmailAlreadyExistsException();
     }
 
+    /**
+     * 이메일 인증 성공
+     * @param requestDto
+     */
+    @Transactional
+    public void confirmEmail(EmailAuthRequestDto requestDto) {
+        EmailAuth emailAuth = emailAuthRepository.findValidAuthByEmail(requestDto.getEmail(), requestDto.getAuthToken(), LocalDateTime.now())
+                .orElseThrow(EmailAuthTokenNotFountException::new);
+        Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(MemberNotFoundException::new);
+        emailAuth.useToken();
+        member.emailVerifiedSuccess();
+    }
+
+    /**
+     * 로컬 로그인 구현
+     * @param requestDto
+     * @return
+     */
     @Transactional
     public MemberLoginResponseDto loginMember(MemberLoginRequestDto requestDto) {
-        Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(LoginFailureException::new);
+        Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(MemberNotFoundException::new);
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword()))
             throw new LoginFailureException();
+        if (!member.getEmailAuth())
+            throw new EmailNotAuthenticatedException();
         member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
         return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(requestDto.getEmail()), member.getRefreshToken());
     }

@@ -6,10 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import project.SangHyun.advice.exception.AuthenticationEntryPointException;
-import project.SangHyun.advice.exception.InvalidRefreshTokenException;
-import project.SangHyun.advice.exception.LoginFailureException;
-import project.SangHyun.advice.exception.MemberEmailAlreadyExistsException;
+import project.SangHyun.advice.exception.*;
 import project.SangHyun.domain.result.Result;
 import project.SangHyun.domain.service.ResponseService;
 
@@ -48,5 +45,17 @@ public class ExceptionAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result invalidRefreshTokenException() {
         return responseService.getFailureResult(-104, "Refresh Token이 유효하지 않습니다.");
+    }
+
+    @ExceptionHandler(EmailNotAuthenticatedException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Result emailAuthenticationException() {
+        return responseService.getFailureResult(-105, "이메일 인증이 필요합니다.");
+    }
+
+    @ExceptionHandler(EmailAuthTokenNotFountException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Result emailAuthTokenNotFountException() {
+        return responseService.getFailureResult(-106, "유효하지 않은 인증요청입니다.");
     }
 }

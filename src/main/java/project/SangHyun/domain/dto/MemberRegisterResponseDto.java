@@ -12,10 +12,13 @@ public class MemberRegisterResponseDto {
     private Long id;
     @ApiParam(value = "로그인 아이디", required = true)
     private String email;
+    @ApiParam(value = "인증 번호", required = true)
+    private String authToken;
 
     @Builder
-    public MemberRegisterResponseDto(Long id, String email, String provider) {
+    public MemberRegisterResponseDto(Long id, String email, String authToken) {
         this.id = id;
         this.email = email;
+        this.authToken = authToken;
     }
 }
